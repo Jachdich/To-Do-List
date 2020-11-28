@@ -1,3 +1,5 @@
+My fork of the (completed) challenge
+
 Extended work from  https://github.com/aqader/todo?file=/LICENSE.md  [Max Sandelin](https://instagram.com/themaxsandelin)
 
 Additional features and commenting added
