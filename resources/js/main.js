@@ -48,7 +48,7 @@ function addItem(value) {
 //This function displays the to-do list
 function renderTodoList() {
   //Checks that the lists are not empty
-  if (!data.todo.length && !data.completed.length) return;
+  if (!data.todo.length && !data.completed.length && !data.priority.length) return;
 
   //If they are not empty then this code will run to display each item in a for loop
   for (var i = 0; i < data.todo.length; i++) {
@@ -61,14 +61,10 @@ function renderTodoList() {
     var value = data.completed[j];
     addItemToDOM(value, true, false);
   }
-
-  //displays for priority list
-  //checks that the priority list exists before running
-  if (data.priority) {
-    //Your code here
-  } else {
-    //Ensures that local storage is reset when priority list is added
-    localStorage.clear();
+  
+  for (var j = 0; j < data.priority.length; j++) {
+   	var value = data.priority[j];
+   	addItemToDOM(value, false, true);
   }
 }
 
@@ -86,8 +82,10 @@ function removeItem() {
 
   if (id === "todo") {
     data.todo.splice(data.todo.indexOf(value), 1);
-  } else {
+  } else if (id == "completed") {
     data.completed.splice(data.completed.indexOf(value), 1);
+  } else {
+  	data.priority.splice(data.priority.indexOf(value), 1);
   }
   dataObjectUpdated();
 
@@ -96,7 +94,34 @@ function removeItem() {
 
 //complete this function
 function prioritise() {
-  //Your code here
+  var item = this.parentNode.parentNode;
+  var parent = item.parentNode;
+  var id = parent.id;
+  var value = item.innerText;
+
+  var target;
+  switch (id) {
+  	case "todo":
+  		target = document.getElementById("priority");
+  		data.todo.splice(data.todo.indexOf(value), 1);
+    	data.priority.push(value);
+  		break;
+  	case "priority":
+  		target = document.getElementById("todo");
+  		data.priority.splice(data.priority.indexOf(value), 1);
+  		data.todo.push(value);
+  		break;
+  	case "completed":
+  		target = document.getElementById("priority");
+  		data.completed.splice(data.completed.indexOf(value), 1);
+  		data.priority.push(value);
+  		break;
+  }
+
+  dataObjectUpdated();
+
+  parent.removeChild(item);
+  target.insertBefore(item, target.childNodes[0]);
 }
 
 //This function is called when a user clicks the 'complete' button
@@ -106,23 +131,26 @@ function completeItem() {
   var id = parent.id;
   var value = item.innerText;
 
-  if (id === "todo") {
-    //if the item is not completed
-    //take the item out of the to-do list and add it to completed list
-    data.todo.splice(data.todo.indexOf(value), 1);
-    data.completed.push(value);
-  } else {
-    //take item out of completed list and add to to do
-    data.completed.splice(data.completed.indexOf(value), 1);
-    data.todo.push(value);
+  var target;
+  switch (id) {
+  	case "todo":
+  		target = document.getElementById("completed");
+  		data.todo.splice(data.todo.indexOf(value), 1);
+  		data.completed.push(value);
+  		break;
+  	case "completed":
+  		target = document.getElementById("todo");
+  		data.completed.splice(data.completed.indexOf(value), 1);
+  		data.todo.push(value);
+  		break;
+  	case "priority":
+  		target = document.getElementById("completed");
+  		data.priority.splice(data.priority.indexOf(value), 1);
+  		data.completed.push(value);
+  		break;
   }
 
   dataObjectUpdated();
-
-  var target =
-    id === "todo"
-      ? document.getElementById("completed")
-      : document.getElementById("todo");
 
   parent.removeChild(item);
   target.insertBefore(item, target.childNodes[0]);
@@ -132,6 +160,8 @@ function completeItem() {
 function addItemToDOM(text, completedBool, priorityBool) {
   var list = completedBool
     ? document.getElementById("completed")
+    : priorityBool
+    ? document.getElementById("priority")
     : document.getElementById("todo");
 
   var item = document.createElement("li");
@@ -149,6 +179,10 @@ function addItemToDOM(text, completedBool, priorityBool) {
 
   //Prioritise Button
   //Prioritise event listener
+  var priority = document.createElement("button");
+  priority.classList.add("priority");
+  priority.innerHTML = prioritySVG;
+  priority.addEventListener("click", prioritise);
 
   var complete = document.createElement("button");
   complete.classList.add("complete");
@@ -158,8 +192,9 @@ function addItemToDOM(text, completedBool, priorityBool) {
   complete.addEventListener("click", completeItem);
 
   buttons.appendChild(remove);
+  buttons.appendChild(priority);
   buttons.appendChild(complete);
-  //Add the prioritise button
+  //Add the prioritis button
   item.appendChild(buttons);
 
   list.insertBefore(item, list.childNodes[0]);
